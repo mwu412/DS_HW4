@@ -39,25 +39,25 @@ public:
         }
     }
     void Walk() {
-        Walk(y, x, 4, root);
+        root = Walk(y, x, 4, root);
     }
-    void Walk(int r, int c, int dir, node* current) {
+    node* Walk(int r, int c, int dir, node* current) {
         current = new node(arr[r][c]);
         n_node++;
         
         if (c - 1 >= 0 && arr[r][c - 1] != 0 && dir != 3) {    //L
-            Walk(r, c - 1, 0, current->left);
+            current->left = Walk(r, c - 1, 0, current->left);
         }
         if (r + 1 < height && arr[r + 1][c] != 0 && dir != 1) {    //D
-            Walk(r + 1, c, 2, current->down);
+            current->down = Walk(r + 1, c, 2, current->down);
         }
         if (c + 1 < width && arr[r][c + 1] != 0 && dir != 0) {    //R
-            Walk(r, c + 1, 3, current->right);
+            current->right = Walk(r, c + 1, 3, current->right);
         }
         if (r - 1 >= 0 && arr[r - 1][c] != 0 && dir != 2) {    //U
-            Walk(r - 1, c, 1, current->up);
+            current->up = Walk(r - 1, c, 1, current->up);
         }
-        return;
+        return current;
     }
     void Preorder() {
         count = 0;
