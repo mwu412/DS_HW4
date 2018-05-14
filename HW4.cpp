@@ -9,10 +9,9 @@ private:
 	int n;	//number of vertices
 	int **a; //array of cost
 	int **pre; //array of predecessor
-	int previous;
-	stack<int> s; //path
-	void PreviousPath(int i, int j) {
-		previous = j;
+	void PrintPath(int i, int j) {
+		stack<int> s; //path
+		int previous = j;
 		while (previous != i) {
 			previous = pre[i][previous];
 			s.push(previous);
@@ -23,6 +22,31 @@ private:
 		}
 		cout << j;
 		cout << endl;
+	}
+	bool PreviousPath(int i, int j, int k) {
+		stack<int> s1;
+		stack<int> s2;
+		int p = j;
+		while (p != i) {	//j~i
+			p = pre[i][p];
+			s1.push(p);
+		}
+		p = j;
+		while (p != k) {	//j~k
+			p = pre[i][p];
+			s2.push(p);
+		}
+		p = k;
+		while (p != i) {	//k~i
+			p = pre[i][p];
+			s2.push(p);
+		}
+		while (!(s1.empty() || s2.empty())) {
+			if (s1.top() < s2.top()) return false;
+			else if (s2.top() < s1.top()) return true;
+			s1.pop();
+			s2.pop();
+		}
 	}
 public:
 	void MakeMatrix() {
@@ -54,6 +78,11 @@ public:
 						a[i][j] = a[i][k] + a[k][j];
 						pre[i][j] = k;
 					}
+					else if ((a[i][k] + a[k][j]) == a[i][j]) {
+						if (PreviousPath(i, j, k)) {
+							pre[i][j] = k;
+						}
+					}
 				}
 			}
 		}
@@ -63,7 +92,7 @@ public:
 			for (int j = 0; j < n; j++) {
 				if (a[i][j] != MAX && i!=j) {
 					cout << "Path(" << i << ',' << j << "):";
-					PreviousPath(i, j);
+					PrintPath(i, j);
 					cout << "Cost:" << a[i][j] << endl;
 				}
 			}
