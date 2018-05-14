@@ -1,125 +1,81 @@
 #include <iostream>
-#include <string>
-#include <queue>
-
+#include <stack>
 using namespace std;
 
-class Tree {
+#define MAX 1000	//represent: infinity
+
+class Graph {
 private:
-    class node {
-    public:
-        int key;
-        node * left;
-        node * right;
-        node * up;
-        node * down;
-        node(int key) {
-            this->key = key;
-            left = right = up = down = NULL;
-        }
-    };
-    node * root = NULL;
-//    node * current = root;
-    int n_node = 0;
-    int count = 0;
-    int width, height, x, y;
-    int **arr;
+	int n;	//number of vertices
+	int **a; //array of cost
+	int **pre; //array of predecessor
+	int previous;
+	stack<int> s; //path
+	void PreviousPath(int i, int j) {
+		previous = j;
+		while (previous != i) {
+			previous = pre[i][previous];
+			s.push(previous);
+		}
+		while (!s.empty()) {
+			cout << s.top() << "->";
+			s.pop();
+		}
+		cout << j;
+		cout << endl;
+	}
 public:
-    void MakeMatrix() {
-        n_node = 0;
-        cin>> width >> height >> x >> y;
-        arr = new int *[height];
-        for (int j = 0; j < height; j++) {
-            arr[j] = new int[width];
-        }
-        for (int m = 0; m < height; m++) {
-            for (int n = 0; n < width; n++) {
-                cin >> arr[m][n];
-            }
-        }
-    }
-    void Walk() {
-        root = Walk(y, x, 4, root);
-    }
-    node* Walk(int r, int c, int dir, node* current) {
-        current = new node(arr[r][c]);
-        n_node++;
-        
-        if (c - 1 >= 0 && arr[r][c - 1] != 0 && dir != 3) {    //L
-            current->left = Walk(r, c - 1, 0, current->left);
-        }
-        if (r + 1 < height && arr[r + 1][c] != 0 && dir != 1) {    //D
-            current->down = Walk(r + 1, c, 2, current->down);
-        }
-        if (c + 1 < width && arr[r][c + 1] != 0 && dir != 0) {    //R
-            current->right = Walk(r, c + 1, 3, current->right);
-        }
-        if (r - 1 >= 0 && arr[r - 1][c] != 0 && dir != 2) {    //U
-            current->up = Walk(r - 1, c, 1, current->up);
-        }
-        return current;
-    }
-    void Preorder() {
-        count = 0;
-        Preorder(root);
-    }
-    void Preorder(node* search) {
-        if (search) {
-            if (count == n_node - 1) cout << search->key;
-            else cout << search->key << ' ';
-            count++;
-            if (search->left) Preorder(search->left);
-            if (search->down) Preorder(search->down);
-            if (search->right) Preorder(search->right);
-            if (search->up) Preorder(search->up);
-        }
-    }
-    void Postorder() {
-        count = 0;
-        Postorder(root);
-    }
-    void Postorder(node* search) {
-        if (search) {
-            if (search->left) Postorder(search->left);
-            if (search->down) Postorder(search->down);
-            if (search->right) Postorder(search->right);
-            if (search->up) Postorder(search->up);
-            if (count == n_node - 1) cout << search->key;
-            else cout << search->key << ' ';
-            count++;
-        }
-    }
-    void Levelorder() {
-        count = 0;
-        queue<node*> q;
-        q.push(root);
-        while (!q.empty()) {
-            node* current = q.front();
-            q.pop();
-            if (count == n_node - 1) cout << current->key;
-            else cout << current->key << ' ';
-            count++;
-            if (current->left) q.push(current->left);
-            if (current->down) q.push(current->down);
-            if (current->right) q.push(current->right);
-            if (current->up) q.push(current->up);
-        }
-    }
+	void MakeMatrix() {
+		cin >> n;
+		a = new int *[n];
+		for (int i = 0; i < n; i++)
+			a[i] = new int[n];
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				cin >> a[i][j];
+				if (a[i][j] == 0) a[i][j] = MAX;
+			}
+		}
+		pre = new int *[n];
+		for (int i = 0; i < n; i++)
+			pre[i] = new int[n];
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				if(a[i][j] == MAX) pre[i][j] = -1;
+				else pre[i][j] = i;
+			}
+		}
+	}
+	void Floyd() {
+		for (int k = 0; k < n; k++) {
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					if ((a[i][k] + a[k][j]) < a[i][j]) {
+						a[i][j] = a[i][k] + a[k][j];
+						pre[i][j] = k;
+					}
+				}
+			}
+		}
+	}
+	void PrintResult() {
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				if (a[i][j] != MAX && i!=j) {
+					cout << "Path(" << i << ',' << j << "):";
+					PreviousPath(i, j);
+					cout << "Cost:" << a[i][j] << endl;
+				}
+			}
+		}
+	}
 };
 
 int main() {
-    int n_matrix;
-    string str;
-    cin >> n_matrix;
-    for (int i = 0; i < n_matrix; i++) {
-        Tree tree;
-        tree.MakeMatrix();
-        tree.Walk();
-        cin >> str;
-        if (str == "Level-order-traversal") tree.Levelorder();
-        if (str == "Pre-order-traversal") tree.Preorder();
-        if (str == "Post-order-traversal") tree.Postorder();
-        cout << endl;
-    }
-    return 0;
+	Graph g;
+	g.MakeMatrix();
+	g.Floyd();
+	g.PrintResult();
+	system("pause");
+	return 0;
 }
